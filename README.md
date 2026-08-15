@@ -8,7 +8,7 @@ Companion to [open-banking-integration-sandbox](https://github.com/turjoy18/open
 
 ## Status
 
-Core ops flow + read APIs (Issues 1–5). Next: broader test coverage polish, ops runbook docs.
+MVP pipeline covered through Issue 6: health checks → SQL incidents → tickets → read APIs, with automated tests for failure → log → ticket → recovery.
 
 ## Features
 
@@ -95,6 +95,12 @@ After the next successful probe, the open ledger incident is marked `RESOLVED`.
 ```bash
 mvn test
 ```
+
+Coverage highlights:
+
+- Unit: probe UP/DOWN parsing, mock ticket keys, health → incident wiring
+- Integration: `FailureLogTicketFlowIT` — fail → OPEN incident + ticket → no duplicate on re-poll → recover → RESOLVED
+- API: incidents filter/detail, `/api/status`, mock Jira stub
 
 ## Project layout
 

@@ -2,7 +2,6 @@ package com.itopsmonitor.web;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,12 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/mocks")
 public class MockTargetController {
 
-    private final boolean ledgerForceDown;
+    private final OpsMocksProperties mocksProperties;
 
-    public MockTargetController(
-            @Value("${ops.mocks.ledger-force-down:true}") boolean ledgerForceDown
-    ) {
-        this.ledgerForceDown = ledgerForceDown;
+    public MockTargetController(OpsMocksProperties mocksProperties) {
+        this.mocksProperties = mocksProperties;
     }
 
     @GetMapping("/payments")
@@ -36,7 +33,7 @@ public class MockTargetController {
 
     @GetMapping("/ledger")
     public ResponseEntity<Map<String, String>> ledger() {
-        if (ledgerForceDown) {
+        if (mocksProperties.isLedgerForceDown()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(Map.of("service", "ledger-api", "status", "DOWN"));
         }
