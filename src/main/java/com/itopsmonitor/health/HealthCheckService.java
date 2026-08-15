@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
+import com.itopsmonitor.incident.IncidentService;
+
 @Service
 public class HealthCheckService {
 
@@ -20,15 +22,18 @@ public class HealthCheckService {
     private final MonitorProperties properties;
     private final HealthStatusStore statusStore;
     private final RestTemplate restTemplate;
+    private final IncidentService incidentService;
 
     @Autowired
     public HealthCheckService(
             MonitorProperties properties,
             HealthStatusStore statusStore,
-            RestTemplateBuilder restTemplateBuilder
+            RestTemplateBuilder restTemplateBuilder,
+            IncidentService incidentService
     ) {
         this.properties = properties;
         this.statusStore = statusStore;
+        this.incidentService = incidentService;
         this.restTemplate = restTemplateBuilder
                 .setConnectTimeout(Duration.ofMillis(properties.getConnectTimeoutMs()))
                 .setReadTimeout(Duration.ofMillis(properties.getReadTimeoutMs()))
@@ -39,11 +44,13 @@ public class HealthCheckService {
     HealthCheckService(
             MonitorProperties properties,
             HealthStatusStore statusStore,
-            RestTemplate restTemplate
+            RestTemplate restTemplate,
+            IncidentService incidentService
     ) {
         this.properties = properties;
         this.statusStore = statusStore;
         this.restTemplate = restTemplate;
+        this.incidentService = incidentService;
     }
 
     public void checkAll() {
@@ -53,9 +60,15 @@ public class HealthCheckService {
             if (result.up()) {
                 log.info("Health check OK name={} status={} latencyMs={}",
                         result.name(), result.httpStatus(), result.latencyMs());
+                if (incidentService != null) {
+                    incidentService.recordRecovery(result);
+                }
             } else {
                 log.warn("Health check FAIL name={} status={} latencyMs={} message={}",
                         result.name(), result.httpStatus(), result.latencyMs(), result.message());
+                if (incidentService != null) {
+                    incidentService.recordFailure(result);
+                }
             }
         }
     }

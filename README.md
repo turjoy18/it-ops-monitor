@@ -8,20 +8,24 @@ Companion to [open-banking-integration-sandbox](https://github.com/turjoy18/open
 
 ## Status
 
-Health checks against built-in mock endpoints (Issue 2). Next: SQL incident log, ticket creation, ops runbook.
+Health checks + SQL incident log on failure (Issues 1–3). Next: ticket creation (Jira/mock), richer incident APIs, ops runbook.
 
 ## Features
 
 - Scheduled HTTP health probes (configurable interval + target list)
 - Built-in mocks: payments/fx **UP**, ledger **DOWN** (toggleable)
+- On failure: open an H2/SQL incident (deduped while already OPEN); on recovery: mark RESOLVED
 - `GET /api/health-checks` — latest probe results (in-memory)
 - `POST /api/health-checks/run` — run probes immediately
+- `GET /api/incidents` — persisted incidents
 - Actuator `GET /actuator/health`
+- H2 console at `/h2-console`
 
 ## Stack
 
 - Java 17+
-- Spring Boot 3.4 (Web + Actuator + Scheduling)
+- Spring Boot 3.4 (Web + Actuator + Scheduling + Data JPA)
+- H2 (file DB under `./data/`)
 - Maven
 
 ## Requirements
@@ -41,9 +45,17 @@ Then:
 - Service root: http://127.0.0.1:8080/
 - Latest checks: http://127.0.0.1:8080/api/health-checks
 - Run now: `curl -X POST http://127.0.0.1:8080/api/health-checks/run`
+- Incidents: http://127.0.0.1:8080/api/incidents
 - Actuator: http://127.0.0.1:8080/actuator/health
 
-Watch the console for `Health check OK` / `Health check FAIL` lines every `ops.monitor.poll-interval-ms` (default 15s).
+Watch the console for `Health check OK` / `FAIL` and `Incident OPEN` / `RESOLVED`.
+
+### H2 console
+
+1. Open http://127.0.0.1:8080/h2-console
+2. JDBC URL: `jdbc:h2:file:./data/ops-monitor`
+3. User: `sa` (blank password)
+4. Query: `SELECT * FROM INCIDENTS;`
 
 ### Force ledger mock healthy
 
@@ -54,6 +66,8 @@ ops:
   mocks:
     ledger-force-down: false
 ```
+
+After the next successful probe, the open ledger incident is marked `RESOLVED`.
 
 ## Tests
 
@@ -68,7 +82,7 @@ src/main/java/com/itopsmonitor/
   ItOpsMonitorApplication.java
   web/          # root + mock target endpoints
   health/       # probe service, scheduler, status API
-  incident/     # (next) SQL incident log
+  incident/     # JPA entity, SQL persistence, list API
   ticket/       # (next) Jira / mock tickets
 ```
 
