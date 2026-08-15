@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: it-ops-monitor
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# Placeholders for later issues (health checks / targets)
+ops:
+  monitor:
+    poll-interval-ms: 30000
+    targets: []
