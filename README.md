@@ -8,26 +8,26 @@ Companion to [open-banking-integration-sandbox](https://github.com/turjoy18/open
 
 ## Status
 
-Scaffold only (Issue 1). Planned:
+Health checks against built-in mock endpoints (Issue 2). Next: SQL incident log, ticket creation, ops runbook.
 
-- Background health checks against mock endpoints
-- Persist incidents to SQL on failure
-- Create a support ticket (Jira REST or mock)
-- Ops runbook under `/docs`
+## Features
+
+- Scheduled HTTP health probes (configurable interval + target list)
+- Built-in mocks: payments/fx **UP**, ledger **DOWN** (toggleable)
+- `GET /api/health-checks` — latest probe results (in-memory)
+- `POST /api/health-checks/run` — run probes immediately
+- Actuator `GET /actuator/health`
 
 ## Stack
 
 - Java 17+
-- Spring Boot 3.4 (Web + Actuator)
+- Spring Boot 3.4 (Web + Actuator + Scheduling)
 - Maven
-- SQL + ticket client (coming in later issues)
 
 ## Requirements
 
 - JDK 17 or newer
 - Maven 3.9+ (`mvn -v`)
-
-Optional: generate a Maven Wrapper so others don’t need a global Maven install (see below).
 
 ## Run locally
 
@@ -39,7 +39,21 @@ mvn spring-boot:run
 Then:
 
 - Service root: http://127.0.0.1:8080/
-- Actuator health: http://127.0.0.1:8080/actuator/health
+- Latest checks: http://127.0.0.1:8080/api/health-checks
+- Run now: `curl -X POST http://127.0.0.1:8080/api/health-checks/run`
+- Actuator: http://127.0.0.1:8080/actuator/health
+
+Watch the console for `Health check OK` / `Health check FAIL` lines every `ops.monitor.poll-interval-ms` (default 15s).
+
+### Force ledger mock healthy
+
+In `src/main/resources/application.yml`:
+
+```yaml
+ops:
+  mocks:
+    ledger-force-down: false
+```
 
 ## Tests
 
@@ -47,27 +61,15 @@ Then:
 mvn test
 ```
 
-## Maven Wrapper (optional)
-
-From the project root, with Maven installed once:
-
-```bash
-mvn -N wrapper:wrapper -Dmaven=3.9.9
-```
-
-After that you can use `./mvnw` / `mvnw.cmd` instead of `mvn`.
-
 ## Project layout
 
 ```text
 src/main/java/com/itopsmonitor/
   ItOpsMonitorApplication.java
-  web/          # HTTP entrypoints
-  health/       # (next) endpoint probes
+  web/          # root + mock target endpoints
+  health/       # probe service, scheduler, status API
   incident/     # (next) SQL incident log
   ticket/       # (next) Jira / mock tickets
-src/main/resources/
-  application.yml
 ```
 
 ## Project tracking

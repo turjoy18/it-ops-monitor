@@ -14,8 +14,18 @@ management:
     health:
       show-details: when_authorized
 
-# Placeholders for later issues (health checks / targets)
 ops:
+  mocks:
+    # Set to false to make the ledger mock return 200 instead of 503
+    ledger-force-down: true
   monitor:
-    poll-interval-ms: 30000
-    targets: []
+    poll-interval-ms: 15000
+    connect-timeout-ms: 2000
+    read-timeout-ms: 3000
+    targets:
+      - name: payments-api
+        url: http://127.0.0.1:8080/mocks/payments
+      - name: fx-api
+        url: http://127.0.0.1:8080/mocks/fx
+      - name: ledger-api
+        url: http://127.0.0.1:8080/mocks/ledger

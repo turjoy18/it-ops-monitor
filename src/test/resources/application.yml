@@ -1,0 +1,11 @@
+spring:
+  task:
+    scheduling:
+      enabled: false
+
+ops:
+  mocks:
+    ledger-force-down: true
+  monitor:
+    poll-interval-ms: 60000
+    targets: []
