@@ -70,6 +70,12 @@ class IncidentPersistenceIT {
         assertThat(afterFirst).hasSize(1);
         assertThat(afterFirst.get(0).getTargetName()).isEqualTo("ledger-api");
         assertThat(afterFirst.get(0).getStatus()).isEqualTo(IncidentStatus.OPEN);
+        assertThat(afterFirst.get(0).getTicketKey()).isNotBlank();
+
+        mockMvc.perform(get("/api/tickets"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1))
+                .andExpect(jsonPath("$.tickets[0].key").value(afterFirst.get(0).getTicketKey()));
 
         mockMvc.perform(post("/api/health-checks/run"))
                 .andExpect(status().isOk());
@@ -79,6 +85,7 @@ class IncidentPersistenceIT {
         mockMvc.perform(get("/api/incidents"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(greaterThanOrEqualTo(1)))
-                .andExpect(jsonPath("$.openCount").value(1));
+                .andExpect(jsonPath("$.openCount").value(1))
+                .andExpect(jsonPath("$.incidents[0].ticketKey").isNotEmpty());
     }
 }

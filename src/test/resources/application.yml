@@ -18,6 +18,9 @@ spring:
 ops:
   mocks:
     ledger-force-down: true
+  ticket:
+    provider: mock
+    project-key: OPS
   monitor:
     poll-interval-ms: 60000
     targets: []
