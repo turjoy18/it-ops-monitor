@@ -41,6 +41,12 @@ public class Incident {
 
     private Instant resolvedAt;
 
+    @Column(length = 64)
+    private String ticketKey;
+
+    @Column(length = 512)
+    private String ticketUrl;
+
     protected Incident() {
     }
 
@@ -96,6 +102,19 @@ public class Incident {
 
     public Instant getResolvedAt() {
         return resolvedAt;
+    }
+
+    public String getTicketKey() {
+        return ticketKey;
+    }
+
+    public String getTicketUrl() {
+        return ticketUrl;
+    }
+
+    public void attachTicket(String key, String url) {
+        this.ticketKey = key;
+        this.ticketUrl = url;
     }
 
     public void resolve(Instant at) {

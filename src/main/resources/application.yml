@@ -35,6 +35,14 @@ ops:
   mocks:
     # Set to false to make the ledger mock return 200 instead of 503
     ledger-force-down: true
+  ticket:
+    # mock = in-process tickets; jira = HTTP to ops.ticket.jira.base-url (real or /mocks/jira)
+    provider: mock
+    project-key: OPS
+    jira:
+      base-url: http://127.0.0.1:8080/mocks/jira
+      username: ""
+      api-token: ""
   monitor:
     poll-interval-ms: 15000
     connect-timeout-ms: 2000

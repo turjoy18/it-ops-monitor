@@ -8,16 +8,18 @@ Companion to [open-banking-integration-sandbox](https://github.com/turjoy18/open
 
 ## Status
 
-Health checks + SQL incident log on failure (Issues 1–3). Next: ticket creation (Jira/mock), richer incident APIs, ops runbook.
+Health checks → SQL incidents → mock/Jira tickets (Issues 1–4). Next: richer list/status APIs, tests polish, ops runbook.
 
 ## Features
 
 - Scheduled HTTP health probes (configurable interval + target list)
 - Built-in mocks: payments/fx **UP**, ledger **DOWN** (toggleable)
 - On failure: open an H2/SQL incident (deduped while already OPEN); on recovery: mark RESOLVED
+- On new incident: create a support ticket (in-process **mock** by default, or **Jira REST** / built-in `/mocks/jira`)
 - `GET /api/health-checks` — latest probe results (in-memory)
 - `POST /api/health-checks/run` — run probes immediately
-- `GET /api/incidents` — persisted incidents
+- `GET /api/incidents` — persisted incidents (includes `ticketKey` / `ticketUrl`)
+- `GET /api/tickets` — mock tickets created this run
 - Actuator `GET /actuator/health`
 - H2 console at `/h2-console`
 
@@ -46,14 +48,31 @@ Then:
 - Latest checks: http://127.0.0.1:8080/api/health-checks
 - Run now: `curl -X POST http://127.0.0.1:8080/api/health-checks/run`
 - Incidents: http://127.0.0.1:8080/api/incidents
+- Tickets: http://127.0.0.1:8080/api/tickets
 - Actuator: http://127.0.0.1:8080/actuator/health
 
-Watch the console for `Health check OK` / `FAIL` and `Incident OPEN` / `RESOLVED`.
+Watch the console for `Incident OPEN`, `Mock ticket created`, and `linked to ticket`.
+
+### Ticketing modes
+
+Default (`ops.ticket.provider: mock`): in-process tickets like `OPS-1` (no external Jira).
+
+Optional Jira-shaped HTTP (still no Cloud license needed — use the local stub):
+
+```yaml
+ops:
+  ticket:
+    provider: jira
+    jira:
+      base-url: http://127.0.0.1:8080/mocks/jira
+```
+
+For a real Jira Cloud site, set `base-url` to your site and fill `username` + `api-token`.
 
 ### H2 console
 
 1. Open http://127.0.0.1:8080/h2-console
-2. JDBC URL: `jdbc:h2:file:./data/ops-monitor`
+2. JDBC URL: `jdbc:h2:file:./data/ops-monitor` (run the app from the project root)
 3. User: `sa` (blank password)
 4. Query: `SELECT * FROM INCIDENTS;`
 
@@ -83,7 +102,7 @@ src/main/java/com/itopsmonitor/
   web/          # root + mock target endpoints
   health/       # probe service, scheduler, status API
   incident/     # JPA entity, SQL persistence, list API
-  ticket/       # (next) Jira / mock tickets
+  ticket/       # TicketClient (mock + Jira REST) + /mocks/jira stub
 ```
 
 ## Project tracking
