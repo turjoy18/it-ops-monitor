@@ -85,4 +85,19 @@ public class IncidentService {
     public List<Incident> listAll() {
         return incidentRepository.findAllByOrderByDetectedAtDesc();
     }
+
+    @Transactional(readOnly = true)
+    public List<Incident> listByStatus(IncidentStatus status) {
+        return incidentRepository.findByStatusOrderByDetectedAtDesc(status);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Incident> findById(Long id) {
+        return incidentRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public long countOpen() {
+        return incidentRepository.countByStatus(IncidentStatus.OPEN);
+    }
 }

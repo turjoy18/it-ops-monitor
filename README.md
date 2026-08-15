@@ -8,7 +8,7 @@ Companion to [open-banking-integration-sandbox](https://github.com/turjoy18/open
 
 ## Status
 
-Health checks → SQL incidents → mock/Jira tickets (Issues 1–4). Next: richer list/status APIs, tests polish, ops runbook.
+Core ops flow + read APIs (Issues 1–5). Next: broader test coverage polish, ops runbook docs.
 
 ## Features
 
@@ -18,7 +18,9 @@ Health checks → SQL incidents → mock/Jira tickets (Issues 1–4). Next: rich
 - On new incident: create a support ticket (in-process **mock** by default, or **Jira REST** / built-in `/mocks/jira`)
 - `GET /api/health-checks` — latest probe results (in-memory)
 - `POST /api/health-checks/run` — run probes immediately
-- `GET /api/incidents` — persisted incidents (includes `ticketKey` / `ticketUrl`)
+- `GET /api/incidents` — list incidents (`?status=OPEN|RESOLVED`)
+- `GET /api/incidents/{id}` — incident detail
+- `GET /api/status` — overall snapshot (probes + open incidents)
 - `GET /api/tickets` — mock tickets created this run
 - Actuator `GET /actuator/health`
 - H2 console at `/h2-console`
@@ -45,9 +47,9 @@ mvn spring-boot:run
 Then:
 
 - Service root: http://127.0.0.1:8080/
-- Latest checks: http://127.0.0.1:8080/api/health-checks
 - Run now: `curl -X POST http://127.0.0.1:8080/api/health-checks/run`
-- Incidents: http://127.0.0.1:8080/api/incidents
+- Status: http://127.0.0.1:8080/api/status
+- Open incidents: http://127.0.0.1:8080/api/incidents?status=OPEN
 - Tickets: http://127.0.0.1:8080/api/tickets
 - Actuator: http://127.0.0.1:8080/actuator/health
 
@@ -99,9 +101,9 @@ mvn test
 ```text
 src/main/java/com/itopsmonitor/
   ItOpsMonitorApplication.java
-  web/          # root + mock target endpoints
-  health/       # probe service, scheduler, status API
-  incident/     # JPA entity, SQL persistence, list API
+  web/          # root, status snapshot, mock targets
+  health/       # probe service, scheduler, health-check API
+  incident/     # JPA entity, persistence, incident APIs
   ticket/       # TicketClient (mock + Jira REST) + /mocks/jira stub
 ```
 

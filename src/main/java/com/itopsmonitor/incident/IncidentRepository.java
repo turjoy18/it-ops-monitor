@@ -13,4 +13,8 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
     );
 
     List<Incident> findAllByOrderByDetectedAtDesc();
+
+    List<Incident> findByStatusOrderByDetectedAtDesc(IncidentStatus status);
+
+    long countByStatus(IncidentStatus status);
 }
