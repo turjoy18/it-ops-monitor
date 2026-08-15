@@ -38,7 +38,7 @@ class HealthCheckServiceTest {
         store = new HealthStatusStore();
         restTemplate = new RestTemplate();
         server = MockRestServiceServer.createServer(restTemplate);
-        service = new HealthCheckService(properties, store, restTemplate);
+        service = new HealthCheckService(properties, store, restTemplate, null);
     }
 
     @Test

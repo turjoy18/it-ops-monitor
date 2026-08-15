@@ -25,7 +25,8 @@ Thumbs.db
 .env
 *.log
 
-# H2 (future local DB files)
+# H2 local DB files
+data/
 *.db
 *.mv.db
 *.trace.db
