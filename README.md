@@ -8,7 +8,12 @@ Companion to [open-banking-integration-sandbox](https://github.com/turjoy18/open
 
 ## Status
 
-MVP pipeline covered through Issue 6: health checks → SQL incidents → tickets → read APIs, with automated tests for failure → log → ticket → recovery.
+MVP complete for the placement demo: scheduled health checks → SQL incident log → mock/Jira tickets → read APIs → tests → docs/runbook.
+
+## Docs
+
+- [Architecture](docs/architecture.md) — components and probe → incident → ticket flow
+- [Ops runbook](docs/runbook.md) — detect → investigate → resolve
 
 ## Features
 
@@ -46,14 +51,24 @@ mvn spring-boot:run
 
 Then:
 
-- Service root: http://127.0.0.1:8080/
-- Run now: `curl -X POST http://127.0.0.1:8080/api/health-checks/run`
-- Status: http://127.0.0.1:8080/api/status
-- Open incidents: http://127.0.0.1:8080/api/incidents?status=OPEN
-- Tickets: http://127.0.0.1:8080/api/tickets
-- Actuator: http://127.0.0.1:8080/actuator/health
+| What | URL / command |
+|------|----------------|
+| Root | http://127.0.0.1:8080/ |
+| Run probes now | `curl -X POST http://127.0.0.1:8080/api/health-checks/run` |
+| Overall status | http://127.0.0.1:8080/api/status |
+| Open incidents | http://127.0.0.1:8080/api/incidents?status=OPEN |
+| Tickets | http://127.0.0.1:8080/api/tickets |
+| Actuator | http://127.0.0.1:8080/actuator/health |
 
 Watch the console for `Incident OPEN`, `Mock ticket created`, and `linked to ticket`.
+
+### Demo the failure flow (2 minutes)
+
+1. Start the app with default config (`ledger-force-down: true`).
+2. `POST /api/health-checks/run` → `/api/status` shows `DEGRADED`.
+3. `/api/incidents?status=OPEN` shows `ledger-api` with a `ticketKey` (e.g. `OPS-1`).
+4. Set `ops.mocks.ledger-force-down: false`, restart, run probes again → incident `RESOLVED`, status `HEALTHY`.
+5. Follow [docs/runbook.md](docs/runbook.md) for the ops narrative.
 
 ### Ticketing modes
 
@@ -78,18 +93,6 @@ For a real Jira Cloud site, set `base-url` to your site and fill `username` + `a
 3. User: `sa` (blank password)
 4. Query: `SELECT * FROM INCIDENTS;`
 
-### Force ledger mock healthy
-
-In `src/main/resources/application.yml`:
-
-```yaml
-ops:
-  mocks:
-    ledger-force-down: false
-```
-
-After the next successful probe, the open ledger incident is marked `RESOLVED`.
-
 ## Tests
 
 ```bash
@@ -105,6 +108,9 @@ Coverage highlights:
 ## Project layout
 
 ```text
+docs/
+  architecture.md
+  runbook.md
 src/main/java/com/itopsmonitor/
   ItOpsMonitorApplication.java
   web/          # root, status snapshot, mock targets
